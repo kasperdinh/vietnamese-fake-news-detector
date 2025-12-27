@@ -17,27 +17,28 @@ app.add_middleware(
 )
 
 # Load model and tokenizer (using a pre-trained model for Vietnamese text classification)
-MODEL_NAME = "vinai/phobert-base"  # PhoBERT for Vietnamese
+MODEL_NAME = "../model/"  # PhoBERT for Vietnamese
+
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-try:
-    model = AutoModelForSequenceClassification.from_pretrained("../model", num_labels=2)
-    print("Loaded trained model from ../model")
-except:
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2)
-    print("Using pre-trained model")
+
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2)
+
+print("Model and tokenizer loaded.")
 
 class NewsInput(BaseModel):
     text: str
 
 @app.post("/predict")
 def predict_fake_news(news: NewsInput):
-    inputs = tokenizer(news.text, return_tensors="pt", truncation=True, padding=True, max_length=512)
+    inputs = tokenizer(news.text, return_tensors="pt", truncation=True, padding=True, max_length=256)
     with torch.no_grad():
         outputs = model(**inputs)
         predictions = torch.argmax(outputs.logits, dim=-1)
+        probs = outputs.logits.softmax(dim=-1).squeeze(0)
     label = predictions.item()
     result = "Fake News" if label == 1 else "Real News"
-    return {"prediction": result, "confidence": outputs.logits.softmax(dim=-1).tolist()}
+    confidence_percent = (probs * 100).tolist()
+    return {"prediction": result, "confidence": confidence_percent}
 
 @app.get("/")
 def read_root():

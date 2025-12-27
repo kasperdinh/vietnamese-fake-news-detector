@@ -5,6 +5,7 @@ import { useState } from 'react';
 export default function Home() {
   const [text, setText] = useState('');
   const [result, setResult] = useState('');
+  const [confidence, setConfidence] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,6 +21,7 @@ export default function Home() {
       });
       const data = await response.json();
       setResult(data.prediction);
+      setConfidence(data.confidence);
     } catch (error) {
       setResult('Error: Could not connect to backend');
     }
@@ -34,7 +36,7 @@ export default function Home() {
             Vietnamese Fake News Detector
           </h1>
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Enter a news article in Vietnamese to check if it's real or fake.
+            Enter a news article in Vietnamese to check if it is real or fake.
           </p>
           <form onSubmit={handleSubmit} className="w-full max-w-md">
             <textarea
@@ -54,7 +56,12 @@ export default function Home() {
           </form>
           {result && (
             <div className="mt-6 p-4 bg-zinc-100 dark:bg-zinc-800 rounded-md">
-              <p className="text-lg font-medium">{result}</p>
+              <p className="text-lg font-medium">Prediction: {result}</p>
+              {confidence.length > 0 && (
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
+                  Confidence: Real News: {typeof confidence[0] === 'number' ? confidence[0].toFixed(2) : 'N/A'}%, Fake News: {typeof confidence[1] === 'number' ? confidence[1].toFixed(2) : 'N/A'}%
+                </p>
+              )}
             </div>
           )}
         </div>
