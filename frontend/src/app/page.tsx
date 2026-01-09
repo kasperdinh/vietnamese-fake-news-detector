@@ -22,50 +22,100 @@ export default function Home() {
       const data = await response.json();
       setResult(data.prediction);
       setConfidence(data.confidence);
-    } catch (error) {
+    } catch {
       setResult('Error: Could not connect to backend');
     }
     setLoading(false);
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="container mx-auto px-4 py-16">
+        <header className="text-center mb-12">
+          <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
             Vietnamese Fake News Detector
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Enter a news article in Vietnamese to check if it is real or fake.
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Enter a news article in Vietnamese to check if it is real or fake. Our AI-powered tool analyzes the content for authenticity.
           </p>
-          <form onSubmit={handleSubmit} className="w-full max-w-md">
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Paste your news article here..."
-              className="w-full h-32 p-4 border border-zinc-300 rounded-md resize-none"
-              required
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? 'Analyzing...' : 'Check News'}
-            </button>
-          </form>
-          {result && (
-            <div className="mt-6 p-4 bg-zinc-100 dark:bg-zinc-800 rounded-md">
-              <p className="text-lg font-medium">Prediction: {result}</p>
-              {confidence.length > 0 && (
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
-                  Confidence: Real News: {typeof confidence[0] === 'number' ? confidence[0].toFixed(2) : 'N/A'}%, Fake News: {typeof confidence[1] === 'number' ? confidence[1].toFixed(2) : 'N/A'}%
+        </header>
+
+        <main className="max-w-4xl mx-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="news-text" className="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  News Article Text
+                </label>
+                <textarea
+                  id="news-text"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="Paste your news article here..."
+                  className="w-full h-40 p-4 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-200"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Analyzing...</span>
+                  </>
+                ) : (
+                  <span>Check News</span>
+                )}
+              </button>
+            </form>
+
+            {result && (
+              <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-blue-500">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Analysis Result</h3>
+                <p className="text-lg text-gray-700 dark:text-gray-300 mb-4">
+                  Prediction: <span className={`font-bold ${result === 'Real News' ? 'text-green-600' : 'text-red-600'}`}>{result}</span>
                 </p>
-              )}
-            </div>
-          )}
-        </div>
-      </main>
+                {confidence.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Confidence Levels:</p>
+                    <div className="flex space-x-4">
+                      <div className="flex-1">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Real News</span>
+                          <span>{typeof confidence[0] === 'number' ? confidence[0].toFixed(1) : 'N/A'}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="bg-green-500 h-2 rounded-full" style={{ width: `${typeof confidence[0] === 'number' ? confidence[0] : 0}%` }}></div>
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Fake News</span>
+                          <span>{typeof confidence[1] === 'number' ? confidence[1].toFixed(1) : 'N/A'}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="bg-red-500 h-2 rounded-full" style={{ width: `${typeof confidence[1] === 'number' ? confidence[1] : 0}%` }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </main>
+
+        <footer className="text-center mt-16 text-gray-500 dark:text-gray-400">
+          <p>&copy; 2025 Vietnamese Fake News Detector. Built with Next.js and AI.</p>
+        </footer>
+      </div>
     </div>
   );
 }
